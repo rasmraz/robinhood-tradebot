@@ -1,0 +1,17 @@
+# Core trading dependencies
+robin-stocks==3.4.0
+python-dotenv==1.1.1
+pandas==2.3.1
+numpy==2.3.1
+pyotp==2.9.0
+yfinance==0.2.65
+
+# Web framework dependencies
+flask==3.1.1
+flask-cors==6.0.1
+
+# Utility dependencies
+schedule==1.2.2
+
+# Production server
+gunicorn==23.0.0
