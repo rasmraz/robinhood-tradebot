@@ -1,0 +1,15 @@
+robin-stocks==3.0.2
+python-dotenv==1.0.0
+pandas==2.1.4
+numpy==1.24.3
+pyotp==2.9.0
+flask==3.0.0
+flask-cors==4.0.0
+requests==2.31.0
+schedule==1.2.0
+yfinance==0.2.18
+ta==0.10.2
+plotly==5.17.0
+dash==2.14.2
+dash-bootstrap-components==1.5.0
+gunicorn==21.2.0

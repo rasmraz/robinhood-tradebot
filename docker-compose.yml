@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build: .
+    ports:
+      - "12000:12000"
+    environment:
+      - ROBINHOOD_USERNAME=${ROBINHOOD_USERNAME}
+      - ROBINHOOD_PASSWORD=${ROBINHOOD_PASSWORD}
+      - ROBINHOOD_MFA_CODE=${ROBINHOOD_MFA_CODE}
+      - DEFAULT_TRADE_AMOUNT=${DEFAULT_TRADE_AMOUNT:-100.00}
+      - RISK_PERCENTAGE=${RISK_PERCENTAGE:-2.0}
+      - MAX_POSITIONS=${MAX_POSITIONS:-5}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-your-secret-key-here}
+      - FLASK_PORT=12000
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - AUTO_TRADE=${AUTO_TRADE:-false}
+      - TRADING_SYMBOLS=${TRADING_SYMBOLS:-AAPL,GOOGL,MSFT,TSLA,AMZN}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
