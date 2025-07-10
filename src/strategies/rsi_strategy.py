@@ -37,8 +37,12 @@ class RSIStrategy(BaseStrategy):
         if len(prices) < self.period + 1:
             return 50.0  # Neutral RSI if insufficient data
         
-        # Convert to pandas Series
-        price_series = pd.Series(prices)
+        # Ensure we have a pandas Series
+        if isinstance(prices, pd.Series):
+            price_series = prices
+        else:
+            # Convert array-like to Series
+            price_series = pd.Series(prices)
         
         # Calculate price changes
         delta = price_series.diff()
@@ -73,15 +77,29 @@ class RSIStrategy(BaseStrategy):
         
         prices = data['prices']
         
-        if len(prices) < self.period + 1:
+        # Convert to pandas Series for easier calculation - handle both DataFrame and array inputs
+        if isinstance(prices, pd.DataFrame):
+            # If it's a DataFrame, extract the 'close' column
+            if 'close' in prices.columns:
+                price_series = prices['close']
+            else:
+                # Use the first column if 'close' doesn't exist
+                price_series = prices.iloc[:, 0]
+        elif isinstance(prices, pd.Series):
+            price_series = prices
+        else:
+            # Convert array-like to Series
+            price_series = pd.Series(prices)
+        
+        if len(price_series) < self.period + 1:
             return TradeSignal(
                 OrderType.HOLD,
                 0.0,
-                f"Insufficient price history. Need {self.period + 1} periods, got {len(prices)}"
+                f"Insufficient price history. Need {self.period + 1} periods, got {len(price_series)}"
             )
         
         # Calculate RSI
-        rsi = self.calculate_rsi(prices)
+        rsi = self.calculate_rsi(price_series)
         
         # Generate signal based on RSI
         if rsi < self.oversold_threshold:
@@ -94,7 +112,7 @@ class RSIStrategy(BaseStrategy):
                 f"RSI ({rsi:.2f}) indicates oversold condition (< {self.oversold_threshold})",
                 {
                     'rsi': rsi,
-                    'current_price': prices[-1],
+                    'current_price': price_series.iloc[-1],
                     'oversold_threshold': self.oversold_threshold,
                     'overbought_threshold': self.overbought_threshold
                 }
@@ -109,7 +127,7 @@ class RSIStrategy(BaseStrategy):
                 f"RSI ({rsi:.2f}) indicates overbought condition (> {self.overbought_threshold})",
                 {
                     'rsi': rsi,
-                    'current_price': prices[-1],
+                    'current_price': price_series.iloc[-1],
                     'oversold_threshold': self.oversold_threshold,
                     'overbought_threshold': self.overbought_threshold
                 }
@@ -122,7 +140,7 @@ class RSIStrategy(BaseStrategy):
                 f"RSI ({rsi:.2f}) in neutral zone ({self.oversold_threshold}-{self.overbought_threshold})",
                 {
                     'rsi': rsi,
-                    'current_price': prices[-1],
+                    'current_price': price_series.iloc[-1],
                     'oversold_threshold': self.oversold_threshold,
                     'overbought_threshold': self.overbought_threshold
                 }

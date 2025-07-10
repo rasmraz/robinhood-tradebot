@@ -47,8 +47,19 @@ class SMAStrategy(BaseStrategy):
                 f"Insufficient price history. Need {self.long_window} periods, got {len(prices)}"
             )
         
-        # Convert to pandas Series for easier calculation
-        price_series = pd.Series(prices)
+        # Convert to pandas Series for easier calculation - handle both DataFrame and array inputs
+        if isinstance(prices, pd.DataFrame):
+            # If it's a DataFrame, extract the 'close' column
+            if 'close' in prices.columns:
+                price_series = prices['close']
+            else:
+                # Use the first column if 'close' doesn't exist
+                price_series = prices.iloc[:, 0]
+        elif isinstance(prices, pd.Series):
+            price_series = prices
+        else:
+            # Convert array-like to Series
+            price_series = pd.Series(prices)
         
         # Calculate moving averages
         short_ma = price_series.rolling(window=self.short_window).mean().iloc[-1]
@@ -68,7 +79,7 @@ class SMAStrategy(BaseStrategy):
                     'short_ma': short_ma,
                     'long_ma': long_ma,
                     'pct_diff': pct_diff,
-                    'current_price': prices[-1]
+                    'current_price': price_series.iloc[-1]
                 }
             )
         elif pct_diff < -self.threshold:
@@ -81,7 +92,7 @@ class SMAStrategy(BaseStrategy):
                     'short_ma': short_ma,
                     'long_ma': long_ma,
                     'pct_diff': pct_diff,
-                    'current_price': prices[-1]
+                    'current_price': price_series.iloc[-1]
                 }
             )
         else:
@@ -93,7 +104,7 @@ class SMAStrategy(BaseStrategy):
                     'short_ma': short_ma,
                     'long_ma': long_ma,
                     'pct_diff': pct_diff,
-                    'current_price': prices[-1]
+                    'current_price': price_series.iloc[-1]
                 }
             )
     
